@@ -1,0 +1,40 @@
+name: Deploy CodingBits (static site)
+
+on:
+  push:
+    branches: ["main"]
+  # si quieres que NO corra en PR, puedes borrar todo "pull_request"
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  deploy:
+    # Solo ejecutar al hacer push a main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+
+      # No necesitamos Node ni npm porque es un sitio estático
+
+      - name: 📂 Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: ${{ secrets.HOST_FTP }}
+          username: ${{ secrets.USER_FTP }}
+          password: ${{ secrets.PASS_FTP }}
+
+          # Carpeta local desde donde se sube (la raíz del repo)
+          local-dir: ./
+
+          # Carpeta del hosting donde vive el subdominio
+          server-dir: public_html/codingbits.pedrito.cl/
+
+          # Opcional: excluir cosas que no quieres subir
+          exclude: |
+            **/.git*
+            **/.github*
+            **/.gitignore
+            README.md
